@@ -1,0 +1,44 @@
+diff --git a/vmm/modules/m_proc_minidump.c b/vmm/modules/m_proc_minidump.c
+index 413fade..963e9a9 100644
+--- a/vmm/modules/m_proc_minidump.c
++++ b/vmm/modules/m_proc_minidump.c
+@@ -1002,8 +1002,12 @@ POB_M_MINIDUMP_CONTEXT M_MiniDump_Initialize_Internal(_In_ VMM_HANDLE H, _In_ VM
+     }
+ 
+     // ensure the generated file is ok security wise:
++    // if(!strcmp(pProcess->szName, "lsass.exe")) {
++    //     ctx->fDisabledSecurity = TRUE;
++    // }
++
+     if(!strcmp(pProcess->szName, "lsass.exe")) {
+-        ctx->fDisabledSecurity = TRUE;
++        ctx->fDisabledSecurity = FALSE;
+     }
+ 
+     // finish
+diff --git a/vmm/vmmwin.c b/vmm/vmmwin.c
+index c8389af..d6eeb08 100644
+--- a/vmm/vmmwin.c
++++ b/vmm/vmmwin.c
+@@ -3375,7 +3375,9 @@ VOID VmmWinProcess_Enum64_Post(_In_ VMM_HANDLE H, _In_ PVMM_PROCESS pSystemProce
+     if(*pdwPID && (*pdwPID < 0x10000000) && *(PQWORD)szName) {
+         // treat csrss.exe as 'kernel' due to win32k mapping missing in System Process _AND_ treat MemCompression as 'user'
+         fUser =
+-            !((*pdwPID == 4) || ((*pdwState == 0) && (*pqwPEB == 0)) || (*(PQWORD)szName == 0x78652e7373727363)|| !((0x879ad18c8c9e8c93 ^ *(PQWORD)szName) + 1)) ||  // csrss.exe
++            // !((*pdwPID == 4) || ((*pdwState == 0) && (*pqwPEB == 0)) || (*(PQWORD)szName == 0x78652e7373727363)|| !((0x879ad18c8c9e8c93 ^ *(PQWORD)szName) + 1)) ||  // csrss.exe
++            // ((*(PQWORD)(szName + 0x00) == 0x72706d6f436d654d) && (*(PDWORD)(szName + 0x08) == 0x69737365));                                                          // MemCompression "process"
++            !((*pdwPID == 4) || ((*pdwState == 0) && (*pqwPEB == 0)) || (*(PQWORD)szName == 0x78652e7373727363)) ||
+             ((*(PQWORD)(szName + 0x00) == 0x72706d6f436d654d) && (*(PDWORD)(szName + 0x08) == 0x69737365));                                                          // MemCompression "process"
+         pObProcess = VmmProcessCreateEntry(
+             H,
+@@ -3736,7 +3738,9 @@ VOID VmmWinProcess_Enum32_Post(_In_ VMM_HANDLE H, _In_ PVMM_PROCESS pSystemProce
+     if(*pdwPID && (*pdwPID < 0x10000000) && *(PQWORD)szName) {
+         // treat csrss.exe as 'kernel' due to win32k mapping missing in System Process _AND_ treat MemCompression as 'user'
+         fUser =
+-            !((*pdwPID == 4) || ((*pdwState == 0) && (*pdwPEB == 0)) || (*(PQWORD)szName == 0x78652e7373727363) || !((0x879ad18c8c9e8c93 ^ *(PQWORD)szName) + 1)) ||    // csrss.exe
++            // !((*pdwPID == 4) || ((*pdwState == 0) && (*pdwPEB == 0)) || (*(PQWORD)szName == 0x78652e7373727363) || !((0x879ad18c8c9e8c93 ^ *(PQWORD)szName) + 1)) ||    // csrss.exe
++            // ((*(PQWORD)(szName + 0x00) == 0x72706d6f436d654d) && (*(PDWORD)(szName + 0x08) == 0x69737365));                                                             // MemCompression "process"
++            !((*pdwPID == 4) || ((*pdwState == 0) && (*pdwPEB == 0)) || (*(PQWORD)szName == 0x78652e7373727363)) ||
+             ((*(PQWORD)(szName + 0x00) == 0x72706d6f436d654d) && (*(PDWORD)(szName + 0x08) == 0x69737365));                                                             // MemCompression "process"
+         pObProcess = VmmProcessCreateEntry(
+             H,
