@@ -8,8 +8,13 @@ import shutil
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-PYTHON_INCLUDE = os.path.join(os.path.dirname(ctypes.util.find_library('python39')), 'include')
-PYTHON_LIB = os.path.join(os.path.dirname(ctypes.util.find_library('python39')), 'libs')
+try:
+    PYTHON_INCLUDE = os.path.join(os.path.dirname(ctypes.util.find_library('python39')), 'include')
+    PYTHON_LIB = os.path.join(os.path.dirname(ctypes.util.find_library('python39')), 'libs')
+except TypeError:
+    logging.error("Python 3.9 not found, please ensure it is installed and accessible.")
+    exit(1)
+
 WINDOWS_SDK_DEBUG = "D:\\Windows Kits\\10\\Debuggers\\x64"
 MEMPROCFS_REPO = "https://github.com/ufrisk/MemProcFS.git"
 LEECHCORE_REPO = "https://github.com/ufrisk/LeechCore.git"
