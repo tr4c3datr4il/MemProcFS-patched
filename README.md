@@ -16,6 +16,6 @@ Auto-build a "patched" version of MemProcFS
 
 ## Build
 
-1. Run `memprocfs_installer.py` from the command line.
+1. Run `memprocfs_installer.py` from the Developer Console (powershell or cmd)
 
 2. Sit back and Relax
