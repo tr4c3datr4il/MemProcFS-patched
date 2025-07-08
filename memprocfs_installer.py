@@ -65,6 +65,15 @@ def apply_patch(patch_file, target_dir):
     else:
         logging.warning(f"[!] Patch file {patch_file} not found.")
 
+def check_patch_applied(patch_file, target_dir):
+    cmd = ["git", "apply", "--check", patch_file]
+    try:
+        sp.check_output(cmd, cwd=target_dir, stderr=sp.STDOUT)
+        logging.info(f"[+] Patch {patch_file} is not applied.")
+        return True
+    except sp.CalledProcessError as e:
+        logging.error(f"[!] Patch {patch_file} is already applied:\n{e.output.decode()}")
+        return False
 
 def copy(src, dst):
     if os.path.isdir(src):
@@ -100,7 +109,11 @@ def build_memprocfs(build_dir="build"):
     patch_file = os.path.join(patch_target, patch_file)
     patch_file = os.path.abspath(patch_file)
     
-    apply_patch(patch_file, patch_target)
+    if not check_patch_applied(patch_file, patch_target):
+        logging.info("[+] Patch already applied, skipping.")
+    else:
+        logging.info(f"[+] Applying patch {patch_file} to {patch_target}")
+        apply_patch(patch_file, patch_target)
 
     # Restore the solution
     cmd = ["dotnet", "restore"]
